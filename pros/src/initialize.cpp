@@ -1,13 +1,133 @@
 #include "main.h"
 
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
+AutonomousInfo autonomousInfoStruct;
+
+void changeSelection(int valueToChange, int * selection, int size)
+{
+	if(valueToChange == -1)
+	{
+		if((* selection) > 0)
+		{
+			(* selection) --;
+		}
+		else
+		{
+			(* selection) = size - 1;
+		}
 	}
+	else if(valueToChange == 1)
+		{
+			if((* selection) < size - 1)
+			{
+				(* selection) ++;
+			}
+			else
+			{
+				(* selection) = 0;
+			}
+		}
+}
+
+void lcdModeSelect()
+{
+	autonomousInfoStruct = {0,0};
+
+	pros::lcd::initialize();
+
+	bool inModeSelection = 1;
+	int step = 1;
+	bool lastButtonPress = 0;
+	bool newButtonPressed;
+	int lastStep = 0;
+	int alliance = RED;
+	int autonomousSelection = 0;
+
+	const char * selectionText[] = {"DO_NOTHING", "TEST"}; // MODE DEFINITIONS
+	int size = sizeof(selectionText) / sizeof(int);
+
+	autonomousSelection = 0;
+
+	while((pros::competition::is_connected() ? (pros::competition::is_disabled() && inModeSelection) : inModeSelection))
+	{
+		if(lastButtonPress != pros::lcd::read_buttons())
+		{
+			newButtonPressed = pros::lcd::read_buttons();
+		}
+		else
+		{
+			newButtonPressed = 0;
+		}
+
+		lastButtonPress = pros::lcd::read_buttons();
+
+		switch(step)
+		{
+		case(1):
+			if(step != lastStep)
+			{
+				pros::lcd::set_text(1, "    Alliance    ");
+				pros::lcd::set_text(2, "Red         Blue");
+			}
+
+			lastStep = step;
+
+			if(newButtonPressed & LCD_BTN_LEFT)
+			{
+				alliance = RED;
+				step ++;
+			}
+
+			if(newButtonPressed & LCD_BTN_RIGHT)
+			{
+				alliance = BLUE;
+				step ++;
+			}
+
+			break;
+
+		case(2):
+			pros::lcd::set_text(1, "      Mode      ");
+			pros::lcd::set_text(2, selectionText[autonomousSelection]);
+
+			if(newButtonPressed & LCD_BTN_LEFT)
+			{
+				changeSelection(-1, &autonomousSelection, size);
+			}
+			else if(newButtonPressed & LCD_BTN_RIGHT)
+			{
+				changeSelection(1, &autonomousSelection, size);
+			}
+			else if(newButtonPressed & LCD_BTN_CENTER)
+			{
+				step++;
+			}
+			break;
+
+		default:
+			pros::lcd::set_text(1, "   Selection:   ");
+			pros::lcd::print(2, "%s  %s", (alliance ? "Blue" : "Red"),
+					selectionText[autonomousSelection]);
+
+			long startTime = pros::millis();
+
+			//Wait 5 seconds
+			while((pros::competition::is_connected() ? (pros::millis() - startTime < 5000 && pros::competition::is_disabled())
+					: pros::millis() - startTime < 5000))
+			{
+				pros::Task::delay(20);
+			}
+
+			inModeSelection = 0;
+
+			break;
+
+		}
+
+		pros::Task::delay(20);
+	}
+
+	autonomousInfoStruct.alliance = alliance;
+	autonomousInfoStruct.mode = autonomousSelection;
 }
 
 /**
@@ -17,10 +137,10 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
+
+
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
-
-	pros::lcd::register_btn1_cb(on_center_button);
 }
 
 /**
