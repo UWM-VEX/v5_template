@@ -37,7 +37,7 @@ void lcdModeSelect()
 	bool inModeSelection = 1;
 	int step = 1;
 	bool lastButtonPress = 0;
-	bool newButtonPressed;
+	uint8_t newButtonPressed;
 	int lastStep = 0;
 	int alliance = RED;
 	int autonomousSelection = 0;
@@ -65,8 +65,8 @@ void lcdModeSelect()
 		case(1):
 			if(step != lastStep)
 			{
-				pros::lcd::set_text(1, "    Alliance    ");
-				pros::lcd::set_text(2, "Red         Blue");
+				pros::lcd::set_text(2, "_____________Alliance_____________");
+				pros::lcd::set_text(5, "_________Red_________Blue_________");
 			}
 
 			lastStep = step;
@@ -86,8 +86,8 @@ void lcdModeSelect()
 			break;
 
 		case(2):
-			pros::lcd::set_text(1, "      Mode      ");
-			pros::lcd::set_text(2, selectionText[autonomousSelection]);
+			pros::lcd::set_text(2, "_______________Mode_______________");
+			pros::lcd::set_text(5, selectionText[autonomousSelection]);
 
 			if(newButtonPressed & LCD_BTN_LEFT)
 			{
@@ -104,8 +104,8 @@ void lcdModeSelect()
 			break;
 
 		default:
-			pros::lcd::set_text(1, "   Selection:   ");
-			pros::lcd::print(2, "%s  %s", (alliance ? "Blue" : "Red"),
+			pros::lcd::set_text(2, "____________Selection:____________");
+			pros::lcd::print(5, "%s  %s", (alliance ? "Blue" : "Red"),
 					selectionText[autonomousSelection]);
 
 			long startTime = pros::millis();
@@ -136,11 +136,9 @@ void lcdModeSelect()
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
+void initialize() 
+{
 
-
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
 }
 
 /**
@@ -159,4 +157,7 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() 
+{
+	lcdModeSelect();
+}
