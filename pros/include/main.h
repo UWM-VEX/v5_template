@@ -54,6 +54,9 @@
 // using namespace pros::literals;
 // using namespace okapi;
 
+#define RED 0
+#define BLUE 1
+
 /**
  * Prototypes for the competition control tasks are redefined here to ensure
  * that they can be called from user code (i.e. calling autonomous from a
@@ -76,6 +79,7 @@ void opcontrol(void);
  * You can add C++-only headers here
  */
 //#include <iostream>
+#include "auto.hpp"
 #endif
 
 #endif  // _PROS_MAIN_H_
